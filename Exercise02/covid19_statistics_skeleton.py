@@ -37,7 +37,7 @@ print('### Korean COVID-19 New Cases by Region')
 print('* Total new cases:', sum_covid)
 print() # Print an empty line
 print('| Region | New Cases | Ratio (%) | New Cases / 1M |')
-print('| ------ | ---------- | --------- |')
+print('| ------ | ---------- | --------- | --------- |')
 
 cases_by_one_million = normalize_data(n_covid, n_people, scale=10**6)
 
