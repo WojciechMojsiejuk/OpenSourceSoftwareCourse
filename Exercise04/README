@@ -1,0 +1,43 @@
+This game is an variation of "Theseus and the Minotaur" game.
+
+Rules:
+
+* It is designed to be played by two players.
+* First player's goal is to escape the labyrinth through the exit
+* Second player's goal is to catch the first player.
+* Game is turn based and time limited.
+* First player begins the game.
+* Players will loose, if they don't make a move on time.
+* Players will loose, if they move back to the tile they visited before.
+* If the runner can't reach exit they can force catcher to enter the tile with its step.
+* Players can move on a tile which was visited by other player.
+* First player's steps are depicted as a human feet and Ariadne's Thread.
+* Second player's steps are depicted as a minotaur hooves.
+
+Controls:
+
+1. Runner (Theseus)
+    - Move Up: Up Arrow
+    - Move Down: Down Arrow
+    - Move Left: Left Arrow
+    - Move Right: Right Arrow
+2. Chaser (Minotaur)
+    - Move Up: Up Arrow
+    - Move Down: Down Arrow
+    - Move Left: Left Arrow
+    - Move Right: Right Arrow
+
+Map builder:
+
+You can create your own levels and write them as a csv files.
+Map builder doesn't check if the level is solvable. So you
+need to follow the rules accordingly.
+
+Symbols:
+0 - empty
+1 - wall
+2 - exit   (can be multiple)
+3 - runner (must be one)
+4 - chaser (must be one)
+
+Maximal size of the map must be 15 x 15 tiles

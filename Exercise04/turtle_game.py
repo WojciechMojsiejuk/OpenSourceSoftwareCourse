@@ -1,6 +1,7 @@
 import turtle
 import glob
 import time
+import warnings
 
 # global scope variables
 WORLD_SIZE = 600
@@ -32,7 +33,7 @@ class RunawayGame(metaclass=Singleton):
     levels = []
     runner_score = 0
     chaser_score = 0
-
+    level_finished = False
     @classmethod
     def __init__(cls, canvas):
         cls.canvas = canvas
@@ -52,6 +53,7 @@ class RunawayGame(metaclass=Singleton):
     @classmethod
     def start(cls):
         cls.runner.turn = True
+        cls.level_finished = False
         cls.canvas.ontimer(cls.step, cls.timer_msec)
 
     @classmethod
@@ -59,35 +61,46 @@ class RunawayGame(metaclass=Singleton):
         cls.score_drawer.clear()
         cls.drawer.clear()
         cls.score_drawer.write(f'Runner: {cls.runner_score} Chaser: {cls.chaser_score}', font=('Arial', 10, 'bold'))
-        if cls.runner.turn:
-            cls.drawer.write(f'Runners turn. Remaining time: {cls.runner.timer} s', font=('Arial', 8, 'normal'))
-            cls.runner.timer -= 1
+        if cls.runner is not None and cls.chaser is not None:
+            try:
+                if cls.runner.turn:
+                    cls.drawer.write(f'Runners turn. Remaining time: {cls.runner.timer} s', font=('Arial', 8, 'normal'))
+                    cls.runner.timer -= 1
 
-            if cls.runner.timer <= 0.0:
-                cls.chaser.on_win()
-        elif cls.chaser.turn:
-            cls.drawer.write(f'Chaser turn. Remaining time: {cls.runner.timer} s', font=('Arial', 8, 'normal'))
-            cls.chaser.timer -= 1
+                    if cls.runner.timer <= 0.0:
+                        cls.chaser.on_win()
+                elif cls.chaser.turn:
+                    cls.drawer.write(f'Chaser turn. Remaining time: {cls.runner.timer} s', font=('Arial', 8, 'normal'))
+                    cls.chaser.timer -= 1
 
-            if cls.chaser.timer <= 0.0:
-                cls.runner.on_win()
-        cls.canvas.ontimer(cls.step, cls.timer_msec)
+                    if cls.chaser.timer <= 0.0:
+                        cls.runner.on_win()
+                if not cls.level_finished:
+                    cls.canvas.ontimer(cls.step, cls.timer_msec)
+            except AttributeError as ae:
+                warnings.warn(ae, RuntimeWarning)
+                if not cls.levels:
+                    cls.canvas.exitonclick()
+                else:
+                    cls.next_level()
+
 
     @classmethod
     def next_level(cls):
+        cls.level_finished = True
         cls.runner.turn = False
         cls.chaser.turn = False
         cls.canvas.clear()
         cls.canvas.bgcolor('#F8F400')
         cls.on_destroy()
-        time.sleep(1)
         if cls.levels:
             cls.read_map(cls.levels.pop(0))
             cls.start()
         else:
             cls.drawer.setpos(250, 300)
             cls.drawer.write(f'THE END. \n THANKS FOR PLAYING', align='center', font=('Arial', 18, 'normal'))
-            cls.canvas.done()
+            cls.canvas.exitonclick()
+
     @classmethod
     def on_destroy(cls):
         cls.walls = []
@@ -97,6 +110,7 @@ class RunawayGame(metaclass=Singleton):
         for idx, _ in enumerate(cls.minotaur_steps):
             cls.minotaur_steps[idx] = None
         cls.minotaur_steps = []
+        time.sleep(1) # We need to wait 1 s because of the timer racing condition !
         cls.runner = None
         cls.chaser = None
 
@@ -203,11 +217,17 @@ class ManualMover(turtle.RawTurtle):
                 RunawayGame.runner.timer = TURN_TIME
                 RunawayGame.human_steps.append(HumanStep(RunawayGame.canvas, old_position))
                 for exit in RunawayGame.exits:
-                    if self.distance(exit) < TILE_SIZE:
-                        self.on_win()
+                    try:
+                        if self.distance(exit) < TILE_SIZE:
+                            self.on_win()
+                    except UnboundLocalError as ule:
+                        warnings.warn(ule, RuntimeWarning)
                 for step in RunawayGame.human_steps:
-                    if self.distance(step) < TILE_SIZE:
-                        RunawayGame.chaser.on_win()
+                    try:
+                        if self.distance(step) < TILE_SIZE:
+                            RunawayGame.chaser.on_win()
+                    except UnboundLocalError as ule:
+                        warnings.warn(ule, RuntimeWarning)
                 RunawayGame.chaser.turn = True
 
             return
